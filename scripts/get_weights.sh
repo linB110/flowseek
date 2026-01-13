@@ -8,3 +8,9 @@ gdown --fuzzy 'https://drive.google.com/file/d/1dnMzlRqX7wziynQvZjafsXjgbfibNAKG
 gdown --fuzzy 'https://drive.google.com/file/d/1L8PDDkPJguu6qMSrfB7L7FdtZ0A5zFeQ/view?usp=share_link' -O weights/flowseek_M_TartanCT.pth
 gdown --fuzzy 'https://drive.google.com/file/d/1IQoyY5PpKSadtiGuhWwVCqvgD3y8CyFd/view?usp=share_link' -O weights/flowseek_T_TartanCT_TSKH.pth
 gdown --fuzzy 'https://drive.google.com/file/d/1gbZ-6NE3muAnGqvypiS2s_BADHrI4ySf/view?usp=share_link' -O weights/flowseek_M_TartanCT_TSKH.pth
+
+echo "Intermediate weights"
+gdown --fuzzy 'drive.google.com/file/d/1On1lENDwfcUx7s3OuN93wTPYM3mAQAX8/view?usp=share_link' -O weights/flowseek_T_Tartan.pth
+gdown --fuzzy 'drive.google.com/file/d/1RRKd2KqmfTvOwIqEQL-ESLa9qbFnPG05/view?usp=share_link' -O weights/flowseek_T_TartanC.pth
+gdown --fuzzy 'drive.google.com/file/d/1prFtSKCWw3lyTMeMjvhaBbo3OVEvtHK9/view?usp=share_link' -O weights/flowseek_M_Tartan.pth
+gdown --fuzzy 'drive.google.com/file/d/1vQRd-dV4GQjN9JJM9UJEUzq1x76dmBZX/view?usp=share_link' -O weights/flowseek_M_TartanC.pth
