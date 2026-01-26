@@ -44,6 +44,7 @@ gdown --fuzzy 'https://drive.google.com/file/d/1COOQFkMulzpBm4zMoWsaRGk7E3YcVr2I
 ## Modify /path/flowseek/core/depth_anything_v2/dinov2_layers/attention.py
 
 '''
+
 class MemEffAttention(Attention):
     def forward(self, x: Tensor, attn_bias=None) -> Tensor:
         if not XFORMERS_AVAILABLE:
@@ -68,6 +69,7 @@ class MemEffAttention(Attention):
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
+        
 '''
 
 ---
