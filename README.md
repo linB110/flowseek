@@ -1,109 +1,163 @@
-## OS Enviornment and Hardware
-Ubuntu : 20.04
-GPU : Nvidia RTX 5060 Ti (sm_120)
+# FlowSeek Evaluation & Inference Guide
 
-## Conda env
+## OS Environment & Hardware
 
-1. create env
-
-`conda create -n flowseek python=3.10 -y`
+* **OS**: Ubuntu 20.04
+* **GPU**: NVIDIA RTX 5060 Ti (sm_120)
 
 ---
 
-2. install torch
+## Conda Environment Setup
 
-`pip install torch==2.10.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128`
+### 1. Create Conda Environment
+
+```bash
+conda create -n flowseek python=3.10 -y
+conda activate flowseek
+```
 
 ---
 
-3. install xformer
+### 2. Install PyTorch (CUDA 12.8)
 
+```bash
+pip install torch==2.10.0 torchvision torchaudio \
+  --index-url https://download.pytorch.org/whl/cu128
+```
+
+---
+
+### 3. Install xFormers
+
+```bash
 pip install xformers
+```
 
 ---
 
-4. install other dependencies
+### 4. Install Other Dependencies
 
-note : remove some already installed dependenciew (like torch)
+> **Note**: Remove conflicting packages (e.g. `torch`) if already installed.
 
-`pip install -r requirements.txt' 
-
-## Download depth_anything_v2_vits.pth
-
-'wget https://huggingface.co/depth-anything/Depth-Anything-V2-Small/resolve/main/depth_anything_v2_vits.pth'
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-## Download flowseek_T_CT.pth
+## Download Pretrained Models
 
-gdown --fuzzy 'https://drive.google.com/file/d/1COOQFkMulzpBm4zMoWsaRGk7E3YcVr2I/view?usp=share_link'
+### Depth Anything V2 (ViT-S)
 
+```bash
+wget https://huggingface.co/depth-anything/Depth-Anything-V2-Small/resolve/main/depth_anything_v2_vits.pth
+```
 
 ---
 
-## Modify /path/flowseek/core/depth_anything_v2/dinov2_layers/attention.py
+### FlowSeek-T-CT Weights
 
-    class MemEffAttention(Attention):
-        def forward(self, x: Tensor, attn_bias=None) -> Tensor:
-            if not XFORMERS_AVAILABLE:
-                assert attn_bias is None, "xFormers is required for nested tensors usage"
-                return super().forward(x)
-    
-            B, N, C = x.shape
-            qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
-    
-            q, k, v = unbind(qkv, 2)
-            
-            q_half = q.to(dtype=torch.float16)
-            k_half = k.to(dtype=torch.float16)
-            v_half = v.to(dtype=torch.float16)
-            
-            #x = memory_efficient_attention(q, k, v, attn_bias=attn_bias)
-            with autocast(device_type="cuda", dtype=torch.float16):
-                x = memory_efficient_attention(q_half, k_half, v_half, attn_bias=attn_bias)
-            x = x.to(torch.float32)
-            x = x.reshape([B, N, C])
-    
-            x = self.proj(x)
-            x = self.proj_drop(x)
-            return x
-        
+```bash
+gdown --fuzzy "https://drive.google.com/file/d/1COOQFkMulzpBm4zMoWsaRGk7E3YcVr2I/view"
+```
+
+---
+
+## Code Modification (Required for sm_120)
+
+Modify the following file:
+
+```
+flowseek/core/depth_anything_v2/dinov2_layers/attention.py
+```
+
+Replace `MemEffAttention` with:
+
+```python
+class MemEffAttention(Attention):
+    def forward(self, x: Tensor, attn_bias=None) -> Tensor:
+        if not XFORMERS_AVAILABLE:
+            assert attn_bias is None, "xFormers is required for nested tensors usage"
+            return super().forward(x)
+
+        B, N, C = x.shape
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
+
+        q, k, v = unbind(qkv, 2)
+
+        q_half = q.to(dtype=torch.float16)
+        k_half = k.to(dtype=torch.float16)
+        v_half = v.to(dtype=torch.float16)
+
+        with autocast(device_type="cuda", dtype=torch.float16):
+            x = memory_efficient_attention(
+                q_half, k_half, v_half, attn_bias=attn_bias
+            )
+
+        x = x.to(torch.float32).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+```
 
 ---
 
 ## Dataset
 
-dataset : KITTI
+* **Dataset**: KITTI Scene Flow
+* **Download**: [https://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow](https://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow)
 
-where : https://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow
+Place the dataset under:
 
-put downloaded data to /path/flowseek/data/KITTI
+```
+flowseek/data/KITTI
+```
 
 ---
 
 ## Evaluation
 
-run `python evaluate.py --cfg config/eval/flowseek-T.json --model weights/flowseek_T_CT.pth --dataset kitti`
+```bash
+python evaluate.py \
+  --cfg config/eval/flowseek-T.json \
+  --model weights/flowseek_T_CT.pth \
+  --dataset kitti
+```
 
 ---
 
-## Inference on other dataset
+## Inference on Other Datasets
 
-input : 2 images
-output : flow image
+* **Input**: Two RGB images
+* **Output**: Optical flow visualization
+* **Environment**: `flowseek` conda environment
 
-env : under conda env created via above installation
-usage : ` python inference_tum.py   --img1 /home/lab605/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.710184.png   --img2 /home/lab605/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.746225.png `
+### Example (TUM RGB-D)
 
-result visualization : 
-| Image 1 | Image 2 |
-|--------|--------|
-| ![](./inference/data/1341846434.710184.png) | ![](./inference/data/1341846434.746225.png) |
-
-| Optical Flow Result |
-|---------------------|
-| ![](./inference/result/result_flow.png) |
-
-
+```bash
+python inference_tum.py \
+  --img1 /home/lab605/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.710184.png \
+  --img2 /home/lab605/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.746225.png
+```
 
 ---
+
+## Result Visualization
+
+### Input Image Pair
+
+|                             Image 1                             |                             Image 2                             |
+| :-------------------------------------------------------------: | :-------------------------------------------------------------: |
+| <img src="./inference/data/1341846434.710184.png" width="100%"> | <img src="./inference/data/1341846434.746225.png" width="100%"> |
+
+### Optical Flow Result
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="./inference/result/result_flow.png" width="100%">
+    </td>
+  </tr>
+</table>
+
+> The optical flow is computed from **Image 1 → Image 2**.
