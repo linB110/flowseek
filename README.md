@@ -86,3 +86,24 @@ put downloaded data to /path/flowseek/data/KITTI
 run `python evaluate.py --cfg config/eval/flowseek-T.json --model weights/flowseek_T_CT.pth --dataset kitti`
 
 ---
+
+## Inference on other dataset
+
+input : 2 images
+output : flow image
+
+env : under conda env created via above installation
+usage : ` python inference_tum.py   --img1 /home/lab605/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.710184.png   --img2 /home/lab605/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.746225.png `
+
+result visualization : 
+| Image 1 | Image 2 |
+|--------|--------|
+| ![](./inference/data/1341846434.710184.png) | ![](./inference/data/1341846434.746225.png) |
+
+| Optical Flow Result |
+|---------------------|
+| ![](./inference/result/result_flow.png) |
+
+
+
+---
