@@ -43,34 +43,31 @@ gdown --fuzzy 'https://drive.google.com/file/d/1COOQFkMulzpBm4zMoWsaRGk7E3YcVr2I
 
 ## Modify /path/flowseek/core/depth_anything_v2/dinov2_layers/attention.py
 
-'''
-
-class MemEffAttention(Attention):
-    def forward(self, x: Tensor, attn_bias=None) -> Tensor:
-        if not XFORMERS_AVAILABLE:
-            assert attn_bias is None, "xFormers is required for nested tensors usage"
-            return super().forward(x)
-
-        B, N, C = x.shape
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
-
-        q, k, v = unbind(qkv, 2)
+    class MemEffAttention(Attention):
+        def forward(self, x: Tensor, attn_bias=None) -> Tensor:
+            if not XFORMERS_AVAILABLE:
+                assert attn_bias is None, "xFormers is required for nested tensors usage"
+                return super().forward(x)
+    
+            B, N, C = x.shape
+            qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads)
+    
+            q, k, v = unbind(qkv, 2)
+            
+            q_half = q.to(dtype=torch.float16)
+            k_half = k.to(dtype=torch.float16)
+            v_half = v.to(dtype=torch.float16)
+            
+            #x = memory_efficient_attention(q, k, v, attn_bias=attn_bias)
+            with autocast(device_type="cuda", dtype=torch.float16):
+                x = memory_efficient_attention(q_half, k_half, v_half, attn_bias=attn_bias)
+            x = x.to(torch.float32)
+            x = x.reshape([B, N, C])
+    
+            x = self.proj(x)
+            x = self.proj_drop(x)
+            return x
         
-        q_half = q.to(dtype=torch.float16)
-        k_half = k.to(dtype=torch.float16)
-        v_half = v.to(dtype=torch.float16)
-        
-        #x = memory_efficient_attention(q, k, v, attn_bias=attn_bias)
-        with autocast(device_type="cuda", dtype=torch.float16):
-            x = memory_efficient_attention(q_half, k_half, v_half, attn_bias=attn_bias)
-        x = x.to(torch.float32)
-        x = x.reshape([B, N, C])
-
-        x = self.proj(x)
-        x = self.proj_drop(x)
-        return x
-        
-'''
 
 ---
 
