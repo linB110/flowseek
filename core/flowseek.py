@@ -224,14 +224,14 @@ class FlowSeek(
         #    corr_fn = CorrBlock(fmap1_8x, fmap2_8x, self.args)
         
         if self.args.iters > 0:
-        # CNN encoder：可以 FP16
+        # CNN encoder： FP16
             fmap1_8x = self.fnet(image1)
             fmap2_8x = self.fnet(image2)
 
             fmap1_8x = torch.cat((fmap1_8x, mono1), 1)
             fmap2_8x = torch.cat((fmap2_8x, mono2), 1)
 
-            # 🔒 CorrBlock 強制 FP32（關 autocast）
+            #  CorrBlock : FP32
             with torch.autocast(device_type='cuda', enabled=False):
                 fmap1_8x = fmap1_8x.float()
                 fmap2_8x = fmap2_8x.float()
@@ -244,7 +244,7 @@ class FlowSeek(
 
             coords2 = (coords_grid(N, H, W, device=image1.device) + flow_8x).detach()
 
-            # 🔒 全部強制 FP32（update block 不吃 FP16）
+            # FP32（update block not compatible with FP16）
             with torch.autocast(device_type='cuda', enabled=False):
                 corr = corr_fn(coords2, dilation=dilation)
 
