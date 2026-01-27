@@ -135,9 +135,9 @@ python evaluate.py \
 ### Example (TUM RGB-D)
 
 ```bash
-python inference_tum.py \
-  --img1 /home/lab605/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.710184.png \
-  --img2 /home/lab605/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.746225.png
+python inference_one_pair.py \
+  --img1 /path/to/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.710184.png \
+  --img2 /path/to/dataset/TUM/rgbd_dataset_freiburg3_walking_halfsphere/rgb/1341846434.746225.png
 ```
 
 ---
