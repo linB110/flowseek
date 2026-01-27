@@ -151,6 +151,6 @@ The optical flow is computed from **Image 1 → Image 2**.
 | <img src="./inference/data/1341846434.710184.png" width="100%"> | <img src="./inference/data/1341846434.746225.png" width="100%"> |
 |                        result flow (iter4)                      |                       result flow (iter12)                      |
 | <img src="./inference/result/iter_4/result_flow_iter4.png" width="100%"> | <img src="./inference/result/iter_12/result_flow_iter12.png" width="100%"> |
-|                        heat map (iter4)                    |                       heat map (iter12)                       |
+|                  motion level segment (iter4)                    |                    motion level segment (iter12)                  |
 | <img src="./inference/result/iter_4/mag_00000.png" width="100%"> | <img src="./inference/result/iter_12/mag_00001.png" width="100%"> |
 
