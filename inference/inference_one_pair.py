@@ -70,33 +70,28 @@ def demo(args):
 
     # 4. inference
     with torch.no_grad():
-        # 預熱 (Warm-up) - 重要！
-        # 第一次執行通常會包含 CUDA Context 初始化與記憶體分配，時間會很久
-        # 所以我們先空跑一次，讓 GPU 暖身
+        # Warm-up) 
         print("Warm up...")
         _ = model(image1, image2, iters=args.iters, test_mode=True)
         
-        # 設定 CUDA 計時器
+        # set CUDA timer
         starter = torch.cuda.Event(enable_timing=True)
         ender = torch.cuda.Event(enable_timing=True)
         
         print("Running inference...")
-        starter.record()  # 開始計時
+        starter.record() 
         
-        # 正式執行
+        # execution
         results_dict = model(image1, image2, iters=args.iters, test_mode=True)
         
-        ender.record()    # 結束計時
+        ender.record()  
         
-        # 等待 GPU 完成所有指令
         torch.cuda.synchronize()
         
-        # 計算時間 (毫秒)
         curr_time = starter.elapsed_time(ender)
         print(f"⏱️ Inference Time: {curr_time:.2f} ms")
         print(f"🚀 FPS: {1000/curr_time:.2f}")
 
-        # 取出結果並 Unpad
         flow_pr = results_dict['flow'][-1]
         flow = padder.unpad(flow_pr[0]).cpu()
 
