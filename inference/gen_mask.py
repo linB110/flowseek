@@ -100,9 +100,9 @@ def demo(args):
             mask = ((magnitude > thresh1) | (magnitude > thresh2)).astype(np.uint8) * 255
 
             # HSV
-            hsv = cv2.cvtColor(flow_bgr, cv2.COLOR_BGR2HSV)
-            sat = hsv[:,:,1]
-            mask |= (sat > 120).astype(np.uint8) * 255  
+            #hsv = cv2.cvtColor(flow_bgr, cv2.COLOR_BGR2HSV)
+            #sat = hsv[:,:,1]
+            #mask |= (sat > 120).astype(np.uint8) * 255  
 
             # morphology
             kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
